@@ -2,7 +2,7 @@ import tf from "@tensorflow/tfjs";
 
 import { SERVER_URL } from "./utils/env";
 
-async function loadModel() {
+export async function loadModel() {
   try {
     // const modelURL = `${modelUrl}model.json`;
     // const response = await fetch(`${modelUrl}metadata.json`);
@@ -13,9 +13,10 @@ async function loadModel() {
     const model = await tf.loadLayersModel(modelURL);
     // this.model.classes = JSON.parse(body).labels;
     // console.log('@@@', this.model)
+    return model;
   } catch (e) {
     console.error("[@sashido/teachablemachine-node] -", e);
   }
 }
 
-loadModel();
+// loadModel();
