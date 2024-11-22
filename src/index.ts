@@ -4,6 +4,8 @@ import "dotenv/config";
 import express from "express";
 import fs from "fs";
 import multer from "multer";
+import * as PImage from "pureimage";
+import { Readable } from "stream";
 import promisify from "util.promisify";
 
 import { loadModel } from "./ml.js";
@@ -29,17 +31,41 @@ app.get("/load", async (req, res) => {
   res.json({ model });
 });
 
+const bufferToStream = (binary: Buffer) => {
+  const readableInstanceStream = new Readable({
+    read() {
+      this.push(binary);
+      this.push(null);
+    },
+  });
+
+  return readableInstanceStream;
+};
+
 app.post("/upload", upload.single("test"), async function (req, res, next) {
   console.log("uploaded");
-  readFile(req.file?.path ?? "").then((err, data) => {
+  const contentType = req.file?.mimetype ?? "";
+  const filePath = req.file?.path ?? "";
+  readFile(filePath).then(async (buffer) => {
     // get image file extension name
     // const extensionName = path.extname(imgPath);
 
     // convert image file to base64-encoded string
-    const base64Image = Buffer.from(data, "binary").toString("base64");
+    // const base64Image = Buffer.from(data, "binary").toString("base64");
 
+    const stream = bufferToStream(buffer);
+    let imageBitmap;
+
+    if (/png/.test(contentType)) {
+      imageBitmap = await PImage.decodePNGFromStream(stream);
+    }
+
+    if (/jpe?g/.test(contentType)) {
+      imageBitmap = await PImage.decodeJPEGFromStream(stream);
+    }
+    console.log(imageBitmap);
     // combine all strings
-    const base64ImageStr = `data:image/${extensionName.split(".").pop()};base64,${base64Image}`;
+    // const base64ImageStr = `data:image/${extensionName.split(".").pop()};base64,${base64Image}`;
   });
 });
 
