@@ -39,6 +39,14 @@ export async function readImageFile(filePath: string, contentType: string) {
   return imageBitmap;
 }
 
+export async function readImageEncoded(imageEncoded: string) {
+  let buffer = Buffer.from(imageEncoded, "base64");
+  let bufferPNG = await sharp(buffer).toFormat("png").toBuffer();
+  const stream = bufferToStream(bufferPNG);
+  const imageBitmap = await PImage.decodePNGFromStream(stream);
+  return imageBitmap;
+}
+
 export const predict = async (
   imageBitmap: any,
   model: any,
